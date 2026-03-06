@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard · Contratos Ativos</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#2a8c5a;--surface:#fff;--surface2:#6ac998;--border:#9a958e;--border2:#000000;
+  --ink:#000000;--ink2:#1d221e;--ink3:#9a958e;
+  --accent:#012f24;--accent-light:#fff;
+  --green:#2a6ec8;--green-light:#ecf7f2;
+  --blue:#2a6ec8;
+  --font:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;
+  --radius:14px;--shadow:0 2px 14px rgba(0,0,0,0.07);
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);min-height:100vh;}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 18px;}
+
+/* ── Header ── */
+header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-icon{width:44px;height:44px;border-radius:13px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:4px 4px 0 #2a8c5a;}
+.logo-text h1{font-size:1.45rem;font-weight:800;letter-spacing:-.03em;}
+.logo-text p{font-size:.7rem;color:var(--ink3);font-family:var(--mono);margin-top:2px;}
+.upd-badge{font-size:.7rem;font-family:var(--mono);color:var(--ink3);background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:5px 13px;display:flex;align-items:center;gap:6px;}
+.dot-green{width:6px;height:6px;border-radius:50%;background:var(--green);}
+.dot-gray{width:6px;height:6px;border-radius:50%;background:var(--border2);}
+
+/* ── Setup banner ── */
+.setup-banner{
+  background:linear-gradient(135deg,#f5fff5 0%,#fff 100%);
+  border:1.5px solid #bbf0b0;border-radius:var(--radius);
+  padding:20px 24px;margin-bottom:22px;
+  display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;
+}
+.setup-banner .icon{font-size:1.8rem;flex-shrink:0;margin-top:2px;}
+.setup-banner h3{font-size:.95rem;font-weight:700;color:var(--accent);margin-bottom:6px;}
+.setup-banner p{font-size:.78rem;color:var(--ink2);line-height:1.7;font-family:var(--mono);}
+.setup-banner code{background:#f5e8e0;padding:1px 6px;border-radius:4px;font-size:.75rem;}
+.setup-input-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:flex-end;width:100%;}
+.setup-input-row input{flex:1;min-width:280px;background:#fff;border:1.5px solid var(--border);border-radius:9px;padding:9px 13px;font-family:var(--mono);font-size:.82rem;color:var(--ink);outline:none;}
+.setup-input-row input:focus{border-color:var(--accent);}
+
+/* ── Buttons ── */
+.btn{padding:9px 20px;border-radius:9px;border:none;font-family:var(--font);font-weight:700;font-size:.86rem;cursor:pointer;transition:all .17s;display:inline-flex;align-items:center;gap:6px;}
+.btn-accent{background:var(--accent);color:#fff;box-shadow:3px 3px 0 rgba(200,80,42,.2);}
+.btn-accent:hover{background:#b84422;transform:translateY(-1px);}
+.btn-accent:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-outline{background:transparent;border:1.5px solid var(--border2);color:var(--ink2);}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+.btn-sm{padding:6px 14px;font-size:.78rem;}
+.btn-ghost{background:transparent;color:var(--ink3);font-size:.78rem;padding:5px 10px;border-radius:7px;}
+.btn-ghost:hover{background:var(--surface2);color:var(--ink);}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid var(--border);}
+.tab-btn{padding:10px 22px;border:none;background:transparent;font-family:var(--font);font-size:.88rem;font-weight:600;color:var(--ink3);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:all .15s;}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-btn:hover:not(.active){color:var(--ink2);}
+
+/* ── Sections ── */
+.sec{display:none;}.sec.active{display:block;}
+
+/* ── Lançamento ── */
+.date-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-radius:11px;}
+.date-bar label{font-size:.72rem;font-family:var(--mono);color:var(--ink2);font-weight:600;}
+.date-bar input[type=date]{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--ink);font-family:var(--mono);font-size:.83rem;outline:none;}
+.date-bar input[type=date]:focus{border-color:var(--accent);}
+
+.lanc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;margin-bottom:20px;}
+.lanc-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);transition:border-color .2s;}
+.lanc-card:focus-within{border-color:var(--accent);}
+.vend-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.avatar{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#fff;flex-shrink:0;}
+.vend-header-name{font-size:.95rem;font-weight:700;}
+.fields-row{display:flex;gap:8px;}
+.fld{flex:1;display:flex;flex-direction:column;gap:4px;}
+.fld label{font-size:.63rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;}
+.fld input{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--ink);font-family:var(--mono);font-size:.85rem;outline:none;width:100%;transition:border-color .18s;}
+.fld input:focus{border-color:var(--accent);}
+.saved-tag{display:none;margin-top:8px;font-size:.68rem;font-family:var(--mono);color:var(--green);background:var(--green-light);padding:3px 9px;border-radius:6px;width:fit-content;}
+
+/* ── Filters ── */
+.filters-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:20px;}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fg label{font-size:.63rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;}
+.fg select,.fg input[type=date]{
+  background:var(--surface);border:1.5px solid var(--border);border-radius:9px;
+  padding:8px 12px;color:var(--ink);font-family:var(--mono);font-size:.8rem;outline:none;cursor:pointer;
+  appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%239a958e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;
+}
+.fg select:focus,.fg input[type=date]:focus{border-color:var(--blue);}
+.fg input[type=date]{background-image:none;padding-right:12px;}
+
+/* ── KPIs ── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:13px;margin-bottom:20px;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+.kpi::after{content:'';position:absolute;bottom:-16px;right:-16px;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,var(--accent-light) 0%,transparent 70%);}
+.kpi-label{font-size:.63rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;}
+.kpi-val{font-size:1.85rem;font-weight:800;letter-spacing:-.04em;line-height:1;}
+.kpi-val.c-accent{color:var(--accent);}
+.kpi-val.c-green{color:var(--green);}
+.kpi-val.c-blue{color:var(--blue);}
+.kpi-sub{font-size:.67rem;color:var(--ink3);margin-top:5px;font-family:var(--mono);}
+
+/* ── Charts ── */
+.charts-row{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:18px;}
+.charts-row-2{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:18px;}
+@media(max-width:700px){.charts-row-2{grid-template-columns:1fr;}}
+.chart-card,.ranking-card,.table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
+.card-title{font-size:.65rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;}
+.ctabs{display:flex;gap:3px;}
+.ctab{padding:4px 11px;border-radius:6px;font-size:.72rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--ink3);transition:all .13s;font-family:var(--font);}
+.ctab.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+.chart-wrap{height:320px;position:relative;}
+.chart-wrap-sm{height:260px;position:relative;}
+
+/* ── Ranking ── */
+.ranking-card{margin-bottom:18px;}
+.rank-list{display:flex;flex-direction:column;gap:9px;margin-top:12px;}
+.rank-item{display:flex;align-items:center;gap:10px;}
+.rank-pos{width:24px;height:24px;border-radius:7px;background:var(--surface2);font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--ink2);flex-shrink:0;font-family:var(--mono);}
+.rank-pos.gold{background:#FFD700;color:#7a5900;}
+.rank-pos.silver{background:#C8D0D8;color:#3a4048;}
+.rank-pos.bronze{background:#D4A574;color:#5a3010;}
+.rank-name{flex:1;font-size:.86rem;font-weight:600;}
+.rank-bar-wrap{flex:2;height:7px;background:var(--surface2);border-radius:100px;overflow:hidden;}
+.rank-bar{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--accent),#f08060);transition:width .7s cubic-bezier(.34,1.56,.64,1);}
+.rank-val{font-size:.8rem;font-family:var(--mono);font-weight:700;color:var(--green);white-space:nowrap;min-width:40px;text-align:right;}
+
+/* ── Table ── */
+.table-card{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{text-align:left;padding:9px 13px;font-size:.62rem;font-family:var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;border-bottom:2px solid var(--border);}
+tbody td{padding:11px 13px;font-size:.82rem;border-bottom:1px solid var(--border);font-family:var(--mono);}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:var(--surface2);}
+.badge-v{display:inline-block;padding:2px 9px;border-radius:100px;font-size:.67rem;font-weight:700;background:var(--accent-light);color:var(--accent);}
+
+/* ── Logo upload ── */
+.logo-img{width:44px;height:44px;border-radius:13px;object-fit:contain;background:#fff;padding:3px;box-shadow:4px 4px 0 rgba(200,80,42,.22);}
+.logo-upload-wrap{position:relative;cursor:pointer;}
+.logo-upload-wrap input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.logo-upload-wrap:hover .logo-icon,.logo-upload-wrap:hover .logo-img{outline:2px dashed rgba(255,255,255,.6);outline-offset:2px;}
+
+/* ── Avatar foto ── */
+.avatar{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:800;color:#fff;flex-shrink:0;position:relative;cursor:pointer;overflow:hidden;}
+.avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:12px;}
+.avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .18s;border-radius:12px;font-size:.7rem;color:#fff;font-family:var(--font);font-weight:700;}
+.avatar:hover .avatar-overlay{opacity:1;}
+.avatar input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+
+.empty,.loading-msg{text-align:center;padding:48px 20px;color:var(--ink3);}
+.empty .ico{font-size:2rem;margin-bottom:8px;}
+.loading-msg{font-family:var(--mono);font-size:.83rem;}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:22px;right:22px;padding:11px 20px;border-radius:10px;font-size:.82rem;font-family:var(--mono);box-shadow:0 8px 28px rgba(0,0,0,.15);z-index:9999;transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.ok{background:var(--green);color:#fff;}
+.toast.err{background:#c83030;color:#fff;}
+.toast.info{background:var(--ink);color:#fff;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
+.anim{animation:fadeUp .35s ease both;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <div class="logo-upload-wrap" title="Clique para trocar o logo">
+      <div class="logo-icon" id="logoIcon">📋</div>
+      <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" onchange="trocarLogo(this)"/>
+    </div>
+    <div class="logo-text">
+      <h1>Contratos Ativos</h1>
+      <p>acompanhamento diário · 5 vendedores</p>
+    </div>
+  </div>
+  <div class="upd-badge">
+    <span id="dotStatus" class="dot-gray"></span>
+    <span id="updText">não conectado</span>
+  </div>
+</header>
+
+<!-- Setup banner -->
+<div class="setup-banner" id="setupBanner">
+  <div class="icon">🔗</div>
+  <div style="flex:1">
+    <h3>Conectar ao Google Sheets</h3>
+    <p>
+      Cole abaixo a URL do seu <strong>Apps Script</strong> publicado como Web App.<br>
+      Veja o arquivo <code>Code.gs</code> para instruções de como publicar.
+    </p>
+    <div class="setup-input-row">
+      <input type="text" id="apiUrl" placeholder="https://script.google.com/macros/s/XXXXXXX/exec"/>
+      <button class="btn btn-accent" onclick="conectar()">Conectar</button>
+      <button class="btn btn-ghost" onclick="usarDemo()">▶ Demo offline</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('lanc',this)">✏️ Lançar Dados</button>
+  <button class="tab-btn" onclick="showTab('dash',this)">📊 Dashboard</button>
+</div>
+
+<!-- LANÇAMENTO -->
+<div class="sec active" id="sec-lanc">
+  <div class="date-bar">
+    <label>📅 Data:</label>
+    <input type="date" id="lancData"/>
+    <button class="btn btn-outline btn-sm" onclick="setHoje()">Hoje</button>
+    <span style="font-size:.72rem;color:var(--ink3);font-family:var(--mono);margin-left:auto" id="lancInfo"></span>
+  </div>
+  <div class="lanc-grid" id="lancGrid"></div>
+  <button class="btn btn-accent" id="btnSalvar" onclick="salvarTodos()" disabled>
+    💾 Salvar Lançamentos
+  </button>
+</div>
+
+<!-- DASHBOARD -->
+<div class="sec" id="sec-dash">
+  <div class="filters-bar">
+    <div class="fg"><label>De</label><input type="date" id="fFrom"/></div>
+    <div class="fg"><label>Até</label><input type="date" id="fTo"/></div>
+    <div class="fg">
+      <label>Vendedor</label>
+      <select id="fVend"><option value="">Todos</option></select>
+    </div>
+    <div style="display:flex;gap:8px;align-self:flex-end;">
+      <button class="btn btn-accent btn-sm" onclick="applyFilters()">Filtrar</button>
+      <button class="btn btn-outline btn-sm" onclick="clearFilters()">Limpar</button>
+      <button class="btn btn-outline btn-sm" onclick="loadDados()">↻</button>
+    </div>
+  </div>
+  <div id="dashContent"><div class="loading-msg">⟳ Carregando dados…</div></div>
+</div>
+
+</div><!-- /wrap -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── Config ────────────────────────────────────────────────
+const VENDEDORES = ['Alisson','Daniel Raupp','Gabriel','Leonardo','Leandro'];
+const COLORS     = ['#c8502a','#2a6ec8','#2a8c5a','#c88c2a','#7c2ac8'];
+let FOTOS    = JSON.parse(localStorage.getItem('fotos_vendedores')||'{}');
+let LOGO_SRC = localStorage.getItem('logo_src') || '';
+let API_URL  = localStorage.getItem('api_url') || '';
+let allData  = [];
+let currentData = []; // dados atualmente exibidos no dashboard
+let chartMode = 'linha';
+let modoDemo  = false;
+
+// ─── Helpers de data ───────────────────────────────────────
+// "DD/MM/YYYY" ou "D/M/YYYY" → "YYYY-MM-DD"
+function toISO(str){
+  if(!str) return '';
+  const p = str.split('/');
+  if(p.length!==3) return '';
+  return p[2].padStart(4,'0')+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');
+}
+// Date → "YYYY-MM-DD"
+function toInput(d){
+  if(!d) return '';
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+// "YYYY-MM-DD" → Date
+function fromInput(s){
+  if(!s) return null;
+  const [y,m,d] = s.split('-');
+  return new Date(+y, +m-1, +d);
+}
+
+// ─── Logo ──────────────────────────────────────────────────
+function trocarLogo(input){
+  const file = input.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = e => { LOGO_SRC=e.target.result; localStorage.setItem('logo_src',LOGO_SRC); aplicarLogo(); };
+  r.readAsDataURL(file);
+}
+function aplicarLogo(){
+  const el = document.getElementById('logoIcon');
+  if(LOGO_SRC){ el.innerHTML=`<img src="${LOGO_SRC}" class="logo-img" alt="logo"/>`; el.style.background='transparent'; el.style.padding='0'; }
+}
+
+// ─── Foto vendedor ─────────────────────────────────────────
+function trocarFoto(input, i){
+  const file = input.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = e => { FOTOS[VENDEDORES[i]]=e.target.result; localStorage.setItem('fotos_vendedores',JSON.stringify(FOTOS)); buildLancCards(); };
+  r.readAsDataURL(file);
+}
+
+// ─── Init ──────────────────────────────────────────────────
+(function init(){
+  aplicarLogo();
+  setHoje();
+  buildLancCards();
+  if(API_URL){
+    document.getElementById('apiUrl').value = API_URL;
+    loadDados();
+    document.getElementById('setupBanner').style.display='none';
+  }
+})();
+
+// ─── Conexão ───────────────────────────────────────────────
+function conectar(){
+  const url = document.getElementById('apiUrl').value.trim();
+  if(!url){ toast('Cole a URL do Apps Script.','err'); return; }
+  API_URL = url;
+  localStorage.setItem('api_url', url);
+  modoDemo = false;
+  document.getElementById('setupBanner').style.display='none';
+  loadDados();
+}
+
+function usarDemo(){
+  modoDemo = true; API_URL = '';
+  document.getElementById('setupBanner').style.display='none';
+  allData = gerarDemoData();
+  document.getElementById('btnSalvar').disabled = false;
+  setStatus(true);
+  popularVendedores();
+  renderDash();
+  toast('Modo demo ativo. Dados não serão salvos.','info');
+}
+
+function gerarDemoData(){
+  const rows=[], hoje=new Date();
+  for(let d=14;d>=0;d--){
+    const dt=new Date(hoje); dt.setDate(dt.getDate()-d);
+    // Sempre gera DD/MM/YYYY com zeros
+    const ds=String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear();
+    VENDEDORES.forEach(v=>{ rows.push({date:ds,vendedor:v,contratos:Math.floor(5+Math.random()*15),valor:Math.floor((10+Math.random()*40)*1000)}); });
+  }
+  return rows;
+}
+
+// ─── JSONP ─────────────────────────────────────────────────
+function jsonp(url){
+  return new Promise((resolve,reject)=>{
+    const cb='_cb_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+    const s=document.createElement('script');
+    const t=setTimeout(()=>{ cleanup(); reject(new Error('Timeout')); },15000);
+    function cleanup(){ try{delete window[cb];}catch(e){} s.remove(); clearTimeout(t); }
+    window[cb]=data=>{ cleanup(); resolve(data); };
+    s.onerror=()=>{ cleanup(); reject(new Error('URL inválida.')); };
+    s.src=url+(url.includes('?')?'&':'?')+'callback='+cb;
+    document.head.appendChild(s);
+  });
+}
+
+// ─── Carregar dados ────────────────────────────────────────
+// Normaliza qualquer formato de data para "DD/MM/YYYY"
+function normalizarData(str){
+  if(!str) return str;
+  str = String(str).trim();
+
+  // Já está em DD/MM/YYYY
+  if(str.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)){
+    const [d,m,y] = str.split('/');
+    return d.padStart(2,'0')+'/'+m.padStart(2,'0')+'/'+y;
+  }
+
+  // YYYY-MM-DD
+  const iso = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(iso) return iso[3]+'/'+iso[2]+'/'+iso[1];
+
+  // JS Date string: "Thu Mar 05 2026 05:00:00 GMT-0300 (...)"
+  const jsdate = str.match(/^[A-Za-z]{3}\s+([A-Za-z]{3})\s+(\d{1,2})\s+(\d{4})/);
+  if(jsdate){
+    const meses={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+    const m = meses[jsdate[1]];
+    const d = String(jsdate[2]).padStart(2,'0');
+    const y = jsdate[3];
+    if(m) return d+'/'+m+'/'+y;
+  }
+
+  return str; // retorna original se não reconheceu
+}
+
+async function loadDados(){
+  if(modoDemo||!API_URL) return;
+  setStatus(false,'carregando…');
+  try{
+    const json=await jsonp(API_URL+'?action=getDados');
+    if(json.erro){ toast(json.erro,'err'); setStatus(false,'erro'); return; }
+    allData=json.rows.map(r=>({...r, date: normalizarData(r.date)}));
+    setStatus(true);
+    popularVendedores();
+    preencherDia();
+    renderDash();
+    document.getElementById('btnSalvar').disabled=false;
+  }catch(e){ toast('Erro: '+e.message,'err'); setStatus(false,'erro de conexão'); }
+}
+
+// ─── Salvar ────────────────────────────────────────────────
+async function salvarTodos(){
+  const dataInput=document.getElementById('lancData').value;
+  if(!dataInput){ toast('Selecione uma data.','err'); return; }
+  const [y,m,d]=dataInput.split('-');
+  const dataBR=`${d}/${m}/${y}`;
+  const btn=document.getElementById('btnSalvar');
+  btn.disabled=true; btn.textContent='Salvando…';
+  let salvos=0,erros=0;
+  const promises=VENDEDORES.map((v,i)=>async()=>{
+    const contr=parseFloat(document.getElementById('c_'+i).value)||0;
+    const valor=parseBR(document.getElementById('v_'+i).value);
+    if(contr===0&&valor===0) return;
+    if(modoDemo){
+      const idx=allData.findIndex(r=>r.date===dataBR&&r.vendedor===v);
+      if(idx>=0){allData[idx].contratos=contr;allData[idx].valor=valor;}
+      else allData.push({date:dataBR,vendedor:v,contratos:contr,valor});
+      document.getElementById('tag_'+i).style.display='inline-block';
+      salvos++; return;
+    }
+    try{
+      const url=`${API_URL}?action=salvar&data=${encodeURIComponent(dataBR)}&vendedor=${encodeURIComponent(v)}&contratos=${contr}&valor=${valor}`;
+      const json=await jsonp(url);
+      if(json.ok){ document.getElementById('tag_'+i).style.display='inline-block'; salvos++; } else erros++;
+    }catch(e){ erros++; }
+  });
+  await Promise.all(promises.map(fn=>fn()));
+  btn.disabled=false; btn.textContent='💾 Salvar Lançamentos';
+  if(salvos>0) toast(`${salvos} lançamento(s) salvo(s)!`,'ok');
+  if(erros>0)  toast(`${erros} erro(s) ao salvar.`,'err');
+  if(!modoDemo) loadDados(); else renderDash();
+}
+
+// ─── Build cards ───────────────────────────────────────────
+function buildLancCards(){
+  document.getElementById('lancGrid').innerHTML=VENDEDORES.map((v,i)=>{
+    const foto=FOTOS[v];
+    const inner=foto
+      ?`<img src="${foto}" alt="${v}"/><div class="avatar-overlay">📷</div><input type="file" accept="image/*" onchange="trocarFoto(this,${i})"/>`
+      :`${v.charAt(0)}<div class="avatar-overlay">📷</div><input type="file" accept="image/*" onchange="trocarFoto(this,${i})"/>`;
+    return `<div class="lanc-card anim" style="animation-delay:${i*.06}s">
+      <div class="vend-header">
+        <div class="avatar" style="background:${COLORS[i]}" title="Clique para trocar a foto">${inner}</div>
+        <span class="vend-header-name">${v}</span>
+      </div>
+      <div class="fields-row">
+        <div class="fld"><label>Contratos</label><input type="number" min="0" id="c_${i}" placeholder="0" oninput="clearTag(${i})"/></div>
+        <div class="fld"><label>Valor (R$)</label><input type="text" id="v_${i}" placeholder="0,00" oninput="maskValor(this,${i})"/></div>
+      </div>
+      <div class="saved-tag" id="tag_${i}">✓ salvo</div>
+    </div>`;
+  }).join('');
+}
+
+function clearTag(i){ document.getElementById('tag_'+i).style.display='none'; }
+
+function maskValor(el, i){
+  clearTag(i);
+  let v = el.value.replace(/[^\d]/g,'');
+  if(!v){ el.value=''; return; }
+  v = v.padStart(3,'0');
+  const cents = v.slice(-2);
+  let units = v.slice(0,-2).replace(/^0+/,'') || '0';
+  units = units.replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  el.value = units + ',' + cents;
+}
+
+function parseBR(str){
+  if(!str) return 0;
+  return parseFloat(str.replace(/\./g,'').replace(',','.')) || 0;
+}
+
+function preencherDia(){
+  const val = document.getElementById('lancData').value;
+  if(!val||allData.length===0) return;
+  const [y,m,d] = val.split('-');
+  const br = `${d.padStart(2,'0')}/${m.padStart(2,'0')}/${y}`;
+  VENDEDORES.forEach((v,i)=>{
+    const r = allData.find(r=>r.date===br&&r.vendedor===v);
+    document.getElementById('c_'+i).value = r?r.contratos:'';
+    const vEl = document.getElementById('v_'+i);
+    vEl.value = (r&&r.valor) ? r.valor.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '';
+  });
+  document.getElementById('lancInfo').textContent = br;
+}
+
+function setHoje(){
+  document.getElementById('lancData').value = toInput(new Date());
+  preencherDia();
+}
+
+// ─── Tabs ──────────────────────────────────────────────────
+function showTab(id,el){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='dash') renderDash();
+}
+
+// ─── Populate vendedor select ──────────────────────────────
+function popularVendedores(){
+  const sel=document.getElementById('fVend');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Todos</option>';
+  [...new Set(allData.map(r=>r.vendedor))].sort().forEach(v=>{
+    const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o);
+  });
+  sel.value=cur;
+}
+
+// ─── FILTROS ───────────────────────────────────────────────
+
+// Normaliza QUALQUER formato de data para timestamp numérico
+// Aceita: "DD/MM/YYYY", "D/M/YYYY", "YYYY-MM-DD", "MM/DD/YYYY" não suportado intencionalmente
+function dateToTs(str){
+  if(!str && str!==0) return null;
+  str = String(str).trim();
+
+  // Formato DD/MM/YYYY ou D/M/YYYY  (padrão BR)
+  const brl = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(brl) return new Date(+brl[3], +brl[2]-1, +brl[1]).getTime();
+
+  // Formato YYYY-MM-DD  (ISO)
+  const iso = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(iso) return new Date(+iso[1], +iso[2]-1, +iso[3]).getTime();
+
+  // Formato JS Date string do Google Sheets:
+  // "Thu Mar 05 2026 05:00:00 GMT-0300 (Horário Padrão de Brasília)"
+  // Extrai dia, mês e ano diretamente por regex — ignora hora e fuso
+  const jsdate = str.match(/^[A-Za-z]{3}\s+([A-Za-z]{3})\s+(\d{1,2})\s+(\d{4})/);
+  if(jsdate){
+    const meses = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+    const mes = meses[jsdate[1]];
+    const dia = +jsdate[2];
+    const ano = +jsdate[3];
+    if(mes !== undefined) return new Date(ano, mes, dia).getTime();
+  }
+
+  // Número serial do Excel/Sheets
+  const serial = parseInt(str, 10);
+  if(!isNaN(serial) && str.match(/^\d+$/)){
+    return (serial - 25569) * 86400000;
+  }
+
+  return null;
+}
+
+// Detecta o formato real das datas vindas do servidor
+function detectDateFormat(sampleDate){
+  if(!sampleDate) return 'desconhecido';
+  const s = String(sampleDate).trim();
+  if(s.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) return 'DD/MM/YYYY';
+  if(s.match(/^\d{4}-\d{2}-\d{2}/))         return 'YYYY-MM-DD';
+  if(s.match(/^\d+$/))                        return 'serial numérico';
+  return 'formato desconhecido: '+s;
+}
+
+function getFiltered(){
+  const fromVal = document.getElementById('fFrom').value;
+  const toVal   = document.getElementById('fTo').value;
+  const vend    = document.getElementById('fVend').value;
+
+  const fromTs = fromVal ? dateToTs(fromVal) : null;
+  const toTs   = toVal   ? dateToTs(toVal)   : null;
+
+  // Mostra formato das datas no toast para debug
+  if(allData.length > 0){
+    const fmt = detectDateFormat(allData[0].date);
+    const ex  = allData[0].date;
+    const ts  = dateToTs(ex);
+    console.log('[DEBUG] Formato detectado:', fmt, '| Exemplo:', ex, '| ts:', ts);
+    console.log('[DEBUG] fromTs:', fromTs, '| toTs:', toTs);
+    // Alerta visual se o formato não for reconhecido
+    if(ts === null){
+      toast('⚠️ Formato de data não reconhecido: "'+ex+'"', 'err');
+    }
+  }
+
+  const result = allData.filter(r=>{
+    const rTs = dateToTs(r.date);
+    if(rTs === null) return false;
+    if(fromTs !== null && rTs < fromTs) return false;
+    if(toTs   !== null && rTs > toTs  ) return false;
+    if(vend && r.vendedor !== vend) return false;
+    return true;
+  });
+
+  console.log('[DEBUG] Resultado:', result.length, 'de', allData.length);
+  return result;
+}
+
+function applyFilters(){
+  const result = getFiltered();
+  const fromVal = document.getElementById('fFrom').value;
+  const toVal   = document.getElementById('fTo').value;
+  const vend    = document.getElementById('fVend').value;
+  const hasFilter = fromVal || toVal || vend;
+  let badge = document.getElementById('filterBadge');
+  if(!badge){
+    badge = document.createElement('span');
+    badge.id = 'filterBadge';
+    badge.style.cssText='font-size:.7rem;font-family:var(--mono);background:#012f24;color:#fff;padding:3px 10px;border-radius:100px;margin-left:8px;';
+    document.querySelector('.filters-bar').appendChild(badge);
+  }
+  badge.textContent = hasFilter ? `✓ ${result.length} registros` : '';
+  renderDashContent(result);
+}
+
+function clearFilters(){
+  document.getElementById('fVend').value='';
+  document.getElementById('fFrom').value='';
+  document.getElementById('fTo').value='';
+  const badge = document.getElementById('filterBadge');
+  if(badge) badge.textContent='';
+  renderDashContent(allData);
+}
+
+// ─── Dashboard render ──────────────────────────────────────
+function renderDash(){
+  renderDashContent(getFiltered());
+}
+
+function renderDashContent(data){
+  currentData = data || [];
+  const el=document.getElementById('dashContent');
+  if(currentData.length===0){
+    el.innerHTML=`<div class="empty"><div class="ico">📊</div><p>Nenhum dado encontrado para o período selecionado.</p></div>`;
+    return;
+  }
+  el.innerHTML=`
+    <div class="kpi-row anim" id="kpiRow"></div>
+    <div class="charts-row anim">
+      <div class="chart-card">
+        <div class="card-hdr">
+          <span class="card-title">📈 Evolução diária por vendedor</span>
+          <div class="ctabs">
+            <button class="ctab ${chartMode==='linha'?'active':''}" onclick="setCM('linha',this)">Linha</button>
+            <button class="ctab ${chartMode==='barra'?'active':''}" onclick="setCM('barra',this)">Barras</button>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
+      </div>
+    </div>
+    <div class="charts-row-2 anim">
+      <div class="chart-card">
+        <div class="card-hdr"><span class="card-title">🗓️ Total de Contratos ativos por dia</span></div>
+        <div class="chart-wrap-sm"><canvas id="barChart"></canvas></div>
+      </div>
+      <div class="ranking-card" style="margin-bottom:0">
+        <div class="card-hdr"><span class="card-title">🏆 Ranking</span></div>
+        <div class="rank-list" id="rankList"></div>
+      </div>
+    </div>
+    <div class="table-card anim">
+      <div class="card-hdr">
+        <span class="card-title">📋 Registros</span>
+        <span id="tCount" style="font-size:.68rem;font-family:var(--mono);color:var(--ink3)"></span>
+      </div>
+      <table><thead><tr><th>Data</th><th>Vendedor</th><th>Contratos</th><th>Valor</th></tr></thead>
+      <tbody id="tBody"></tbody></table>
+    </div>`;
+
+  renderKPIs(currentData);
+  renderRanking(currentData);
+  renderTable(currentData);
+  setTimeout(()=>renderCharts(currentData), 0);
+}
+
+function renderKPIs(data){
+  const tc=data.reduce((s,r)=>s+r.contratos,0);
+  const tv=data.reduce((s,r)=>s+r.valor,0);
+  const dias=new Set(data.map(r=>r.date)).size||1;
+  const byV={}, byDiasV={};
+  data.forEach(r=>{
+    byV[r.vendedor]=(byV[r.vendedor]||0)+r.valor;
+    if(!byDiasV[r.vendedor]) byDiasV[r.vendedor]=new Set();
+    byDiasV[r.vendedor].add(r.date);
+  });
+  const mediasPorVend=Object.entries(byV).map(([n,t])=>([n, t/(byDiasV[n].size||1)]));
+  const top=mediasPorVend.sort((a,b)=>b[1]-a[1])[0];
+  const fmtR=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('kpiRow').innerHTML=`
+    <div class="kpi"><div class="kpi-label">Total Contratos</div><div class="kpi-val c-accent">${tc.toLocaleString('pt-BR')}</div><div class="kpi-sub">no período</div></div>
+    <div class="kpi"><div class="kpi-label">Valor Total</div><div class="kpi-val c-green">${tv>0?fmtR(tv):'—'}</div><div class="kpi-sub">soma do período</div></div>
+    <div class="kpi"><div class="kpi-label">Média / Dia</div><div class="kpi-val c-blue">${dias>0?fmtR(tv/dias):'—'}</div><div class="kpi-sub">valor por dia</div></div>
+    <div class="kpi"><div class="kpi-label">Líder</div><div class="kpi-val" style="font-size:1.05rem">${top?top[0]:'—'}</div><div class="kpi-sub">${top?fmtR(top[1])+'/dia':''}</div></div>`;
+}
+
+function setCM(m,el){
+  chartMode=m;
+  document.querySelectorAll('.ctab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderCharts(currentData);
+}
+
+function renderCharts(data){
+  Chart.defaults.font.family='JetBrains Mono';
+  Chart.defaults.color='#9a958e';
+  const gc='#e2ddd4';
+  const fmtR=v=>'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  const dates=[...new Set(data.map(r=>r.date))].sort((a,b)=>{ const ai=dateToTs(a)||0, bi=dateToTs(b)||0; return ai-bi; });
+  const vendedores=[...new Set(data.map(r=>r.vendedor))].sort();
+
+  const lc=document.getElementById('lineChart');
+  if(lc){
+    const ex=Chart.getChart(lc); if(ex) ex.destroy();
+    new Chart(lc,{
+      type: chartMode==='barra'?'bar':'line',
+      data:{
+        labels: dates,
+        datasets: vendedores.map((v,i)=>({
+          label: v,
+          data: dates.map(dt=>data.filter(r=>r.date===dt&&r.vendedor===v).reduce((s,r)=>s+r.valor,0)),
+          backgroundColor: COLORS[i%COLORS.length]+(chartMode==='barra'?'cc':'30'),
+          borderColor: COLORS[i%COLORS.length],
+          borderWidth:2.5, tension:.4, fill:false, pointRadius:4, pointHoverRadius:7,
+          borderRadius: chartMode==='barra'?5:0,
+        }))
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        interaction:{ mode:'nearest', intersect:true, axis:'xy' },
+        plugins:{
+          legend:{position:'top',labels:{boxWidth:12,padding:16,font:{size:11},usePointStyle:true}},
+          tooltip:{
+            displayColors:true,
+            callbacks:{
+              title: items => items[0]?.label || '',
+              label: ctx => '  '+ctx.dataset.label+': '+fmtR(ctx.parsed.y),
+              // Remove o texto de fuso horário / data longa do título
+              afterTitle: ()=>''
+            }
+          }
+        },
+        scales:{
+          x:{
+            grid:{color:gc},
+            ticks:{ font:{size:10}, maxRotation:0, autoSkip:true, maxTicksLimit:12 }
+          },
+          y:{
+            grid:{color:gc},
+            ticks:{font:{size:10}, callback:v=>'R$ '+Number(v).toLocaleString('pt-BR',{maximumFractionDigits:0})},
+            beginAtZero:true
+          }
+        }
+      }
+    });
+  }
+
+  const bc=document.getElementById('barChart');
+  if(bc){
+    const ex2=Chart.getChart(bc); if(ex2) ex2.destroy();
+    const dayLbls=[...new Set(data.map(r=>r.date))].sort((a,b)=>{ const ai=dateToTs(a)||0, bi=dateToTs(b)||0; return ai-bi; });
+    const vendList=[...new Set(data.map(r=>r.vendedor))].sort();
+    new Chart(bc,{
+      type:'bar',
+      data:{
+        labels:dayLbls,
+        datasets:vendList.map((v,i)=>({
+          label:v,
+          data:dayLbls.map(dt=>{ const r=data.find(r=>r.date===dt&&r.vendedor===v); return r?r.contratos:0; }),
+          backgroundColor:COLORS[i%COLORS.length]+'cc',
+          borderColor:COLORS[i%COLORS.length],
+          borderWidth:1.5,
+          borderRadius:5,
+          borderSkipped:false
+        }))
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{position:'top',labels:{boxWidth:12,padding:14,font:{size:10},usePointStyle:true}},
+          tooltip:{callbacks:{label:ctx=>'  '+ctx.dataset.label+': '+ctx.parsed.y+' contratos'}}
+        },
+        scales:{
+          x:{grid:{color:gc},ticks:{font:{size:9},maxRotation:45,autoSkip:true,maxTicksLimit:10}},
+          y:{grid:{color:gc},ticks:{font:{size:10},stepSize:1},beginAtZero:true}
+        }
+      }
+    });
+  }
+}
+
+function renderRanking(data){
+  const byTotal={}, byDias={};
+  data.forEach(r=>{
+    byTotal[r.vendedor]=(byTotal[r.vendedor]||0)+r.valor;
+    if(!byDias[r.vendedor]) byDias[r.vendedor]=new Set();
+    byDias[r.vendedor].add(r.date);
+  });
+  const medias=Object.keys(byTotal).map(n=>({
+    nome:n, media:byTotal[n]/(byDias[n].size||1),
+    total:byTotal[n], dias:byDias[n].size
+  })).sort((a,b)=>b.media-a.media);
+  const maxMedia=medias[0]?.media||1;
+  const medals=['gold','silver','bronze'];
+  const fmtR=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('rankList').innerHTML=medias.map((m,i)=>`
+    <div class="rank-item">
+      <div class="rank-pos ${medals[i]||''}">${i+1}</div>
+      <div class="rank-name">${m.nome}</div>
+      <div class="rank-bar-wrap"><div class="rank-bar" style="width:${(m.media/maxMedia*100).toFixed(1)}%"></div></div>
+      <div style="text-align:right;min-width:100px">
+        <div class="rank-val">${fmtR(m.media)}<span style="font-size:.6rem;color:var(--ink3);font-weight:400">/dia</span></div>
+        <div style="font-size:.62rem;color:var(--ink3);font-family:var(--mono)">${m.dias} dias</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderTable(data){
+  const sorted=[...data].sort((a,b)=>{
+    const ai=toISO(a.date), bi=toISO(b.date);
+    return bi<ai?-1:bi>ai?1:a.vendedor.localeCompare(b.vendedor);
+  });
+  document.getElementById('tCount').textContent=sorted.length+' registros';
+  document.getElementById('tBody').innerHTML=sorted.map(r=>`
+    <tr>
+      <td>${r.date}</td>
+      <td><span class="badge-v">${r.vendedor}</span></td>
+      <td><strong>${r.contratos}</strong></td>
+      <td>${r.valor>0?'R$ '+r.valor.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}</td>
+    </tr>`).join('');
+}
+
+// ─── Status / Toast ────────────────────────────────────────
+function setStatus(ok,msg){
+  document.getElementById('dotStatus').className=ok?'dot-green':'dot-gray';
+  document.getElementById('updText').textContent=ok?('atualizado às '+new Date().toLocaleTimeString('pt-BR')):(msg||'desconectado');
+}
+function toast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+type;
+  setTimeout(()=>t.className='toast',3200);
+}
+
+// Atualiza campos ao mudar a data
+document.getElementById('lancData').addEventListener('change', preencherDia);
+</script>
+</body>
+</html>
