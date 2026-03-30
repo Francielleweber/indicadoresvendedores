@@ -17,14 +17,14 @@
   --font:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;
   --radius:14px;--shadow:0 2px 14px rgba(0,0,0,0.07);
 }
-body{background:var(--bg);color:var(--ink);font-family:var(--font);min-height:100vh;}
-.wrap{max-width:1100px;margin:0 auto;padding:28px 18px;}
+body{background-image: url('fundo.png');background-repeat: no-repeat;background-size: cover;background-attachment: fixed;background-position: center;color:var(--ink);font-family:var(--font);min-height:100vh;}
+.wrap{max-width:1200px;margin:0 auto;padding:28px px;}
 
 /* ── Header ── */
 header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;}
 .logo{display:flex;align-items:center;gap:12px;}
 .logo-icon{width:44px;height:44px;border-radius:13px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:4px 4px 0 #2a8c5a;}
-.logo-text h1{font-size:1.45rem;font-weight:800;letter-spacing:-.03em;}
+.logo-text h1{font-size:1.45rem;font-weight:800;letter-spacing:-.03em; color: #fff;}
 .logo-text p{font-size:.7rem;color:var(--ink3);font-family:var(--mono);margin-top:2px;}
 .upd-badge{font-size:.7rem;font-family:var(--mono);color:var(--ink3);background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:5px 13px;display:flex;align-items:center;gap:6px;}
 .dot-green{width:6px;height:6px;border-radius:50%;background:var(--green);}
@@ -50,7 +50,7 @@ header{display:flex;align-items:center;justify-content:space-between;flex-wrap:w
 .btn-accent{background:var(--accent);color:#fff;box-shadow:3px 3px 0 rgba(200,80,42,.2);}
 .btn-accent:hover{background:#b84422;transform:translateY(-1px);}
 .btn-accent:disabled{opacity:.4;cursor:not-allowed;transform:none;}
-.btn-outline{background:transparent;border:1.5px solid var(--border2);color:var(--ink2);}
+.btn-outline{background:#6ac998;border:1.5px solid var(--border2);color:#fff;}
 .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
 .btn-sm{padding:6px 14px;font-size:.78rem;}
 .btn-ghost{background:transparent;color:var(--ink3);font-size:.78rem;padding:5px 10px;border-radius:7px;}
@@ -58,9 +58,9 @@ header{display:flex;align-items:center;justify-content:space-between;flex-wrap:w
 
 /* ── Tabs ── */
 .tabs{display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid var(--border);}
-.tab-btn{padding:10px 22px;border:none;background:transparent;font-family:var(--font);font-size:.88rem;font-weight:600;color:var(--ink3);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:all .15s;}
-.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
-.tab-btn:hover:not(.active){color:var(--ink2);}
+.tab-btn{padding:10px 22px;border:none;background:transparent;font-family:var(--font);font-size:.88rem;font-weight:600;color: #9b9696;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:all .15s;}
+.tab-btn.active{color:#fff;border-bottom-color:var(--accent);}
+.tab-btn:hover:not(.active){color: #9b9696;}
 
 /* ── Sections ── */
 .sec{display:none;}.sec.active{display:block;}
@@ -219,7 +219,7 @@ tbody tr:hover td{background:var(--surface2);}
 <header>
   <div class="logo">
     <div class="logo-upload-wrap" title="Clique para trocar o logo">
-      <img src="sulmak.png" alt="Sulmak Locações" width="150px">
+      <img src="logo2.jpeg" alt="Sulmak Locações" width="150px">
     </div>
     <div class="logo-text">
       <h1>Comercial · Indicadores</h1>
